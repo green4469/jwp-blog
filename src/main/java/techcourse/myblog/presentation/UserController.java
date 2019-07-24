@@ -2,6 +2,7 @@ package techcourse.myblog.presentation;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
@@ -42,14 +43,14 @@ public class UserController {
     @PostMapping("/accounts/users")
     public String processSignup(@Valid UserRequestDto userRequestDto, Errors errors, HttpServletResponse response) {
         if (errors.hasErrors()) {
-            response.setStatus(400);
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
             return "signup";
         }
 
         User user = userRequestDto.toUser();
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             errors.rejectValue("email", "0", EMAIL_DUPLICATION_ERROR_MSG);
-            response.setStatus(400);
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
             return "signup";
         }
 
