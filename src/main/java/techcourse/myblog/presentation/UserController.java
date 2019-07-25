@@ -28,7 +28,6 @@ public class UserController {
     private final UserService userService;
     private final UserRepository userRepository;
 
-    @Autowired
     public UserController(UserRepository userRepository, UserService userService) {
         this.userRepository = userRepository;
         this.userService = userService;
@@ -90,7 +89,7 @@ public class UserController {
     }
 
     @PutMapping("/accounts/profile/edit")
-    public String processUpdateProfile(@Valid UserRequestDto userRequestDto, Errors errors, HttpServletRequest request) {
+    public String processProfileUpdate(@Valid UserRequestDto userRequestDto, Errors errors, HttpServletRequest request) {
         if (errors.hasErrors()) {
             return "mypage-edit";
         }
@@ -101,7 +100,7 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    public String showUserList(Model model) {
+    public String showUserListPage(Model model) {
         List<User> userList = userRepository.findAll();
         model.addAttribute("userList", userList);
         return "user-list";
