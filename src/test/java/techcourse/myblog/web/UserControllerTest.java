@@ -21,14 +21,13 @@ import static techcourse.myblog.presentation.UserController.LOGIN_ERROR_MSG;
 public class UserControllerTest {
     private WebTestClient webTestClient;
     private int testId = 1;
-    private String testName = "abcdeFGHI";
-    private String testPassword = "abcdEFGH123!@#";
-    private String testEmail = "abc@hi.com";
+    public static String testName = "abcdeFGHI";
+    public static String testPassword = "abcdEFGH123!@#";
+    public static String testEmail = "abcd@hi.com";
 
     @Autowired
     public UserControllerTest(WebTestClient webTestClient) {
         this.webTestClient = webTestClient;
-        testSignup(testName, testPassword, testEmail);  // 테스트용 사용자 회원가입. setup과 달리 테스트 시작 전 한번만 수행된다.
     }
 
     @Test

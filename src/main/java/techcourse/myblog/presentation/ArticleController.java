@@ -10,7 +10,7 @@ import techcourse.myblog.service.ArticleService;
 import techcourse.myblog.service.dto.ArticleRequestDto;
 import techcourse.myblog.service.exception.ArticleNotFoundException;
 
-import java.util.List;
+import javax.servlet.http.HttpSession;
 
 @Slf4j
 @Controller
@@ -30,6 +30,7 @@ public class ArticleController {
 
     @PostMapping("/articles")
     public String addNewArticle(ArticleRequestDto articleRequestDto) {
+        // article 저장할 때 로그인 한 유저를 author 로 같이 저장
         Article newArticle = articleRequestDto.toArticle();
         articleRepository.save(newArticle);
         return "redirect:/articles/" + newArticle.getId();
@@ -55,8 +56,9 @@ public class ArticleController {
         return "article";
     }
 
-    @PutMapping("/articles/")
+    @PutMapping("/articles")
     public String updateArticleById(ArticleRequestDto articleRequestDto) {
+        // 로그인한 유저의 id와 업데이트하려는 article의 id가 다를 경우 수정 실패
         articleService.update(articleRequestDto);
         return "redirect:/articles/" + articleRequestDto.getId();
     }

@@ -5,12 +5,17 @@ import techcourse.myblog.service.dto.UserRequestDto;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
 @Getter
 @EqualsAndHashCode(of = {"id"})
 @ToString
+@Table(uniqueConstraints = {
+        @UniqueConstraint(columnNames = "email", name = "uniqueEmailConstraint")}
+)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,8 +25,10 @@ public class User {
     @NotNull
     private String password;
     @NotNull
-    @Column(unique = true)
     private String email;
+
+    @OneToMany(mappedBy = "author")  // User 가 종속적인 엔티티이고, Article 이 주인 엔티티
+    private List<Article> articles = new ArrayList<>();
 
     public User(String name, String password, String email) {
         this.name = name;
@@ -37,5 +44,9 @@ public class User {
 
     public boolean isMatch(UserRequestDto userRequestDto) {
         return email.equals(userRequestDto.getEmail()) && password.equals(userRequestDto.getPassword());
+    }
+
+    public void addArticle(Article persistArticle) {
+        this.articles.add(persistArticle);
     }
 }

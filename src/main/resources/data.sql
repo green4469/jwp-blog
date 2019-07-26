@@ -1,0 +1,1 @@
+INSERT INTO User (name, password, email) VALUES ('abcdeFGHI', 'abcdEFGH123!@#', 'abc@hi.com');

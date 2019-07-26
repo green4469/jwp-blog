@@ -1,5 +1,6 @@
 package techcourse.myblog.web;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,15 +14,18 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static techcourse.myblog.web.UserControllerTest.*;
 
+@Slf4j
 @AutoConfigureWebTestClient
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ArticleControllerTests {
+    private String cookie;
     private WebTestClient webTestClient;
-    private static String testTitle = "목적의식 있는 연습을 통한 효과적인 학습";;
-    private static String testCoverUrl = "https://t1.daumcdn.net/thumb/R1280x0/?fname=http://t1.daumcdn.net/brunch/service/user/5tdm/image/7OdaODfUPkDqDYIQKXk_ET3pfKo.jpeg";
-    private static String testContents = "나는 우아한형제들에서 우아한테크코스 교육 과정을 진행하고 있다. 우테코를 설계하면서 고민스러웠던 부분 중의 하나는 '선발 과정을 어떻게 하면 의미 있는 시간으로 만들 것인가?'였다.";
+    private static String testTitle = "testTitle";
+    private static String testCoverUrl = "testCoverUrl";
+    private static String testContents = "testContents";
     private static String testUniContents = StringEscapeUtils.escapeJava(testContents);
 
     @Autowired
@@ -31,27 +35,44 @@ public class ArticleControllerTests {
 
     @BeforeEach
     void setUp() {
-        saveTestArticle();
+        this.cookie = webTestClient.post()
+                .uri("/login")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .body(BodyInserters
+                        .fromFormData("email", testEmail)
+                        .with("password", testPassword))
+                .exchange()
+                .expectStatus()
+                .isFound()  // 로그인에 성공하면 리다이렉트
+                .returnResult(String.class)
+                .getResponseHeaders()
+                .getFirst("Set-Cookie");
     }
 
     @Test
     void showArticleWritingPageTest() {
         webTestClient.get()
                 .uri("/writing")
+                .header("Cookie", cookie)
                 .exchange()
                 .expectStatus()
                 .isOk();
     }
 
     @Test
-    void saveArticlePageTest() {
+    void addNewArticleTest() {
+        testSaveNewArticle("testArticle", "testCoverUrl", "testContents");
+    }
+
+    private void testSaveNewArticle(String title, String coverUrl, String contents) {
         webTestClient.post()
                 .uri("/articles")
+                .header("Cookie", cookie)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(BodyInserters
-                        .fromFormData("title", testTitle)
-                        .with("coverUrl", testCoverUrl)
-                        .with("contents", testContents))
+                        .fromFormData("title", title)
+                        .with("coverUrl", coverUrl)
+                        .with("contents", contents))
                 .exchange()
                 .expectStatus()
                 .is3xxRedirection()
@@ -65,9 +86,9 @@ public class ArticleControllerTests {
                             .expectBody()
                             .consumeWith(innerResponse -> {
                                 String body = new String(innerResponse.getResponseBody());
-                                assertThat(body.contains(testTitle)).isTrue();
-                                assertThat(body.contains(testCoverUrl)).isTrue();
-                                assertThat(body.contains(testUniContents)).isTrue();
+                                assertThat(body.contains(title)).isTrue();
+                                assertThat(body.contains(coverUrl)).isTrue();
+                                assertThat(body.contains(StringEscapeUtils.escapeJava(testContents))).isTrue();
                             });
                 });
     }
@@ -75,6 +96,7 @@ public class ArticleControllerTests {
     @Test
     void showArticlesPageTest() {
         webTestClient.get().uri("/")
+                .header("Cookie", cookie)
                 .exchange()
                 .expectStatus()
                 .isOk()
@@ -90,6 +112,7 @@ public class ArticleControllerTests {
     @Test
     void showArticleByIdPageTest() {
         webTestClient.get().uri("/articles/1")
+                .header("Cookie", cookie)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -109,7 +132,8 @@ public class ArticleControllerTests {
         String updatedUniContents = StringEscapeUtils.escapeJava(updatedContents);
 
         webTestClient.put()
-                .uri("/articles/1")
+                .uri("/articles")
+                .header("Cookie", cookie)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(BodyInserters
                         .fromFormData("title", updatedTitle)
@@ -135,7 +159,8 @@ public class ArticleControllerTests {
                 });
 
         webTestClient.put()
-                .uri("/articles/1")
+                .uri("/articles")
+                .header("Cookie", cookie)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(BodyInserters
                         .fromFormData("title", testTitle)
@@ -150,6 +175,7 @@ public class ArticleControllerTests {
     void deleteArticleByIdTest() {
         webTestClient.post()
                 .uri("/articles")
+                .header("Cookie", cookie)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(BodyInserters
                         .fromFormData("title", testTitle)
@@ -172,6 +198,7 @@ public class ArticleControllerTests {
     void showArticleEditingPage() {
         webTestClient.get()
                 .uri("/articles/1/edit")
+                .header("Cookie", cookie)
                 .exchange()
                 .expectStatus()
                 .isOk()
@@ -202,6 +229,7 @@ public class ArticleControllerTests {
     void 첫_페이지_방문_시_사용자_이름_GUEST_확인() {
         webTestClient.get()
                 .uri("/")
+                .header("Cookie", cookie)
                 .exchange()
                 .expectStatus()
                 .isOk()
