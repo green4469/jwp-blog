@@ -18,6 +18,7 @@ import reactor.core.publisher.Mono;
 import techcourse.myblog.domain.ArticleVO;
 import techcourse.myblog.domain.CommentVO;
 import techcourse.myblog.domain.UserVO;
+import techcourse.myblog.service.dto.CommentRequestDto;
 import techcourse.myblog.service.dto.CommentRequestRestDto;
 
 import java.lang.reflect.Field;
@@ -284,7 +285,7 @@ public class ArticleControllerTests {
 
     @Test
     void 댓글_추가_REST_테스트() {
-        EntityExchangeResult<byte[]> result = postRestRequest("/articles/1/comments/rest", CommentRequestRestDto.class, "New Comment", "2017-01-13T17:09:42.411");
+        EntityExchangeResult<byte[]> result = postRestRequest("/articles/1/comments/rest", CommentRequestDto.class, "New Comment");
     }
 
     private <T> BodyInserters.FormInserter<String> mapBy(Class<T> classType, String... parameters) {

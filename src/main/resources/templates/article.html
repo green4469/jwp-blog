@@ -68,7 +68,7 @@
                     <ul id="comment-list" class="list-unstyled list-info">
                         <li class="comment-item border bottom mrg-btm-30" th:each="comment : ${comments}">
                             <img class="thumb-img img-circle" src="https://avatars3.githubusercontent.com/u/50367798?v=4" alt="">
-                            <span th:text="${comment.getCommenter().getName()}" href="" class="text-bold inline-block"></span>
+                            <span th:text="${comment.getCommenter()}" href="" class="text-bold inline-block"></span>
                             <span class="sub-title inline-block pull-right">
                                     <i class="ti-timer pdd-right-5"></i>
                                     <span th:text="${comment.getMinAgo() + ' min ago'}">6 min ago</span>
@@ -89,7 +89,7 @@
                             <div class="edit info">
                                 <form th:action="@{/comments/{id}(id=${comment.id})}" th:method="put">
                                     <input name="comment" type="text" th:value="${comment.getComment()}">
-                                    <button id="modify-btn" type="submit" class="btn btn-default">
+                                    <button id="comment-modify-btn" type="submit" class="btn btn-default">
                                         <i class="ti-save"></i>
                                     </button>
                                 </form>
@@ -130,21 +130,15 @@
         "   </span>\n"+
         "   <div class=\"view info\">\n" +
         "      <p class=\"width-80 target\">{{comment}}</p>\n" +
-        "      <form action=\"/comments/{{id}}\" method=\"post\">\n" +
-        "      <input type='hidden' name='_method' value='delete'>\n" +
-        "         <button id=\"remove-btn\" type=\"submit\" class=\"btn btn-default\">\n" +
-        "            <i class=\"ti-close\"></i>\n" +
-        "         </button>\n" +
-        "      </form>\n" +
+        "      <button data-comment-id=\"{{id}}\" data-which-button=\"delete\" type=\"submit\" class=\"btn btn-default\">\n" +
+        "         <i class=\"ti-close\"></i>\n" +
+        "      </button>\n" +
         "   </div>\n" +
         "   <div class=\"edit info\">\n" +
-        "      <form action=\"/comments/{{id}}\" method=\"post\">\n" +
-        "      <input type='hidden' name='_method' value='delete'>\n" +
-        "         <input name=\"comment\" type=\"text\" value=\"{{comment}}\">\n" +
-        "         <button id=\"modify-btn\" type=\"submit\" class=\"btn btn-default\">\n" +
-        "            <i class=\"ti-save\"></i>\n" +
-        "         </button>\n" +
-        "      </form>\n" +
+        "      <input name=\"comment\" type=\"text\" value=\"{{comment}}\">\n" +
+        "      <button data-comment-id=\"{{id}}\" data-which-button=\"update\" type=\"submit\" class=\"btn btn-default\">\n" +
+        "         <i class=\"ti-save\"></i>\n" +
+        "      </button>\n" +
         "   </div>\n" +
         "</li>";
 
@@ -173,11 +167,10 @@
 
     let saveBtn = document.getElementById("comment-save-btn");
     let thArticleId = /*[[${article.getId()}]]*/ 'default';
-    let thLastCreatedAt = /*[[${comments.size() != 0 ? comments.get(comments.size() - 1).getCreatedAt() : null}]]*/ 'default';
+
     saveBtn.addEventListener('click', function() {
         let requestDto = {
-            comment: document.getElementById("article-contents").getAttribute("value"),
-            lastCreatedAt: thLastCreatedAt
+            comment: document.getElementById("article-contents").getAttribute("value")
         }
 
         fetch('/articles/' + thArticleId + '/comments/rest', {
@@ -190,14 +183,23 @@
             return response.json();
         }).then(function(json) {
             console.log(json);
-            let ul = document.getElementById("comment-list");
+            let comments = document.getElementById("comment-list");
+
+            // Remove all children nodes
+            var child = comments.lastElementChild;
+            while (child) {
+                comments.removeChild(child);
+                child = comments.lastElementChild;
+            }
+
+            // Add All comments
             for (var i = 0; i < json.length; i++){
                 var obj = json[i];
                 let compiledNode = commentCompiledTemplate({"commenter": obj.commenter, "comment": obj.comment, "id": obj.id, "minAgo": obj.minAgo});
                 console.log(compiledNode);
                 console.log(typeof compiledNode);
 
-                ul.insertAdjacentHTML('beforeend', commentCompiledTemplate({"commenter": obj.commenter, "comment": obj.comment, "id": obj.id, "minAgo": obj.minAgo}));
+                comments.insertAdjacentHTML('beforeend', commentCompiledTemplate({"commenter": obj.commenter, "comment": obj.comment, "id": obj.id, "minAgo": obj.minAgo}));
             }
         })
     });

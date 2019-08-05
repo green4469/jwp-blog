@@ -16,7 +16,6 @@ import techcourse.myblog.service.ArticleService;
 import techcourse.myblog.service.CommentService;
 import techcourse.myblog.service.dto.ArticleRequestDto;
 import techcourse.myblog.service.dto.CommentRequestDto;
-import techcourse.myblog.service.dto.CommentRequestRestDto;
 import techcourse.myblog.service.dto.CommentResponseDto;
 
 import javax.servlet.http.HttpSession;
@@ -98,17 +97,12 @@ public class ArticleController {
 
     @PostMapping("/{articleId}/comments/rest")
     @ResponseBody
-    public ResponseEntity<List<CommentResponseDto>> addNewComment2(@PathVariable long articleId, @RequestBody CommentRequestRestDto commentRequestRestDto,
+    public ResponseEntity<List<CommentResponseDto>> addNewComment2(@PathVariable long articleId, @RequestBody CommentRequestDto commentRequestDto,
                                                                    HttpSession httpSession) {
         Article article = articleService.findById(articleId);
         User commenter = (User) httpSession.getAttribute(LOGGED_IN_USER_SESSION_KEY);
-        commentService.save(commentRequestRestDto.toComment(commenter, article));
-        List<Comment> addedComments = null;
-        if (commentRequestRestDto.getLastCreatedAt() != null) {
-            addedComments = commentService.findByArticleAfter(article, commentRequestRestDto.getLastCreatedAt());
-        } else {
-            addedComments = commentService.findByArticle(article);
-        }
+        commentService.save(commentRequestDto.toComment(commenter, article));
+        List<Comment> addedComments = commentService.findByArticle(article);
 
         return new ResponseEntity<>(addedComments.stream()
                 .map(CommentResponseDto::new)
