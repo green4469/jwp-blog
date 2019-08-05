@@ -94,18 +94,16 @@
 
 (추가)
 
-- [ ] 패키지 분리
-- [ ] 컨트롤러 분리
+- [x] 패키지 분리
 - [x] ~~AccountController 테스트 코드 중복 제거~~
 - [x] ~~AccountController 테스트 코드 @BeforeEach 사용하지 말고 생성자에서 테스트 유저 추가~~
 - [ ] ArticleController 테스트 코드 중복 제거
-- [ ] ArticleController 테스트 코드 @BeforeEach 사용하지 말고 생성자에서 테스트 유저 추가
 - [x] ~~컨트롤러 Exception Handler 와 404 에러 페이지 추가~~
-- [ ] url /articles를 prefix로 빼기 (/writing -> /articles/writing)
+- [x] url /articles를 prefix로 빼기 (/writing -> /articles/writing)
 - [x] ~~html에서 form 중복 제거하기 (article-edit.html)~~
 - [x] ~~html에서 form 중복 제거하기 (header.html)~~
-- [ ] 테스트할 때만 h2 사용하기  
-- [ ] 자기가 쓴 글만 수정할 수 있도록 하기
+- [x] 테스트할 때만 h2 사용하기  
+- [x] 자기가 쓴 글만 수정할 수 있도록 하기
 
 
 =================================
@@ -123,4 +121,18 @@
 - ~~Add modifyCommentById controller method in CommentController~~
 - ~~Add deleteCommentById controller method in CommentController~~
 - ~~게시글 삭제시 댓글도 삭제~~
-- 댓글 수정 프론트엔드 작업
+- ~~댓글 수정 프론트엔드 작업~~
+
+리팩토링
+- 인수테스트 중복 제거
+    - 모든 인수테스트의 조상 클래스 작성
+        - get/post/put/delete 요청을 보내는 메서드
+        - 리다이렉션 링크를 가져오는 메서드
+        - Response Body 에 원하는 값들이 존재하는지 확인하는 메서드
+
+댓글 ajax
+- CommentResponseRestDto 작성 
+    - error code:int
+    - message:String
+    - data:String
+- 

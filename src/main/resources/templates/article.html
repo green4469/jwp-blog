@@ -67,8 +67,7 @@
                 <div class="comment">
                     <ul id="comment-list" class="list-unstyled list-info">
                         <li class="comment-item border bottom mrg-btm-30" th:each="comment : ${comments}">
-                            <img class="thumb-img img-circle"
-                                 src="https://avatars3.githubusercontent.com/u/50367798?v=4" alt="">
+                            <img class="thumb-img img-circle" src="https://avatars3.githubusercontent.com/u/50367798?v=4" alt="">
                             <span th:text="${comment.getCommenter().getName()}" href="" class="text-bold inline-block"></span>
                             <span class="sub-title inline-block pull-right">
                                     <i class="ti-timer pdd-right-5"></i>
@@ -98,15 +97,16 @@
 
                         </li>
                     </ul>
-                    <form th:action="@{/articles/{id}/comments(id=${article.id})}" method="post">
+                    <!--<form th:action="@{/articles/{id}/comments(id=${article.id})}" method="post">-->
                         <div class="add-comment">
                             <input id="article-contents" name="comment" type="hidden">
                             <div id="editSection"></div>
                         </div>
-                        <button id="save-btn" type="submit" class="btn btn-default">
+                        <!--<button id="comment-save-btn" type="submit" class="btn btn-default">-->
+                        <button id="comment-save-btn" class="btn btn-default">
                             <i class="ti-save"></i>
                         </button>
-                    </form>
+                    <!--</form>-->
 
                 </div>
             </div>
@@ -117,8 +117,39 @@
 <div th:include="fragments/main/js :: js"></div>
 <script src="/js/index.js"></script>
 <script src="/js/comment.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.1.2/handlebars.min.js"></script>
 <script th:inline="javascript">
     /*<![CDATA[*/
+    const commentTemplate =
+        "<li class=\"comment-item border bottom mrg-btm-30\">\n"+
+        "   <img class=\"thumb-img img-circle\" src=\"https://avatars3.githubusercontent.com/u/50367798?v=4\" alt=\"\">\n"+
+        "   <span href=\"\" class=\"text-bold inline-block\">{{commenter}}</span>\n"+
+        "   <span class=\"sub-title inline-block pull-right\">\n" +
+        "      <i class=\"ti-timer pdd-right-5\"></i>\n" +
+        "      <span>{{minAgo}}</span>\n" +
+        "   </span>\n"+
+        "   <div class=\"view info\">\n" +
+        "      <p class=\"width-80 target\">{{comment}}</p>\n" +
+        "      <form action=\"/comments/{{id}}\" method=\"post\">\n" +
+        "      <input type='hidden' name='_method' value='delete'>\n" +
+        "         <button id=\"remove-btn\" type=\"submit\" class=\"btn btn-default\">\n" +
+        "            <i class=\"ti-close\"></i>\n" +
+        "         </button>\n" +
+        "      </form>\n" +
+        "   </div>\n" +
+        "   <div class=\"edit info\">\n" +
+        "      <form action=\"/comments/{{id}}\" method=\"post\">\n" +
+        "      <input type='hidden' name='_method' value='delete'>\n" +
+        "         <input name=\"comment\" type=\"text\" value=\"{{comment}}\">\n" +
+        "         <button id=\"modify-btn\" type=\"submit\" class=\"btn btn-default\">\n" +
+        "            <i class=\"ti-save\"></i>\n" +
+        "         </button>\n" +
+        "      </form>\n" +
+        "   </div>\n" +
+        "</li>";
+
+    const commentCompiledTemplate = Handlebars.compile(commentTemplate);
+
     const initValue = /*[[${article.contents}]]*/ 'default';
 
     const viewer = tui.Editor.factory({
@@ -138,6 +169,37 @@
             }
         },
         height: '200px'
+    });
+
+    let saveBtn = document.getElementById("comment-save-btn");
+    let thArticleId = /*[[${article.getId()}]]*/ 'default';
+    let thLastCreatedAt = /*[[${comments.size() != 0 ? comments.get(comments.size() - 1).getCreatedAt() : null}]]*/ 'default';
+    saveBtn.addEventListener('click', function() {
+        let requestDto = {
+            comment: document.getElementById("article-contents").getAttribute("value"),
+            lastCreatedAt: thLastCreatedAt
+        }
+
+        fetch('/articles/' + thArticleId + '/comments/rest', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json;charset=UTF-8'
+            },
+            body: JSON.stringify(requestDto)
+        }).then(function(response) {
+            return response.json();
+        }).then(function(json) {
+            console.log(json);
+            let ul = document.getElementById("comment-list");
+            for (var i = 0; i < json.length; i++){
+                var obj = json[i];
+                let compiledNode = commentCompiledTemplate({"commenter": obj.commenter, "comment": obj.comment, "id": obj.id, "minAgo": obj.minAgo});
+                console.log(compiledNode);
+                console.log(typeof compiledNode);
+
+                ul.insertAdjacentHTML('beforeend', commentCompiledTemplate({"commenter": obj.commenter, "comment": obj.comment, "id": obj.id, "minAgo": obj.minAgo}));
+            }
+        })
     });
     /*]]>*/
 </script>

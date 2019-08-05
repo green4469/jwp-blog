@@ -14,9 +14,15 @@ import org.springframework.test.web.reactive.server.EntityExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.apache.commons.lang3.StringEscapeUtils;
+import reactor.core.publisher.Mono;
 import techcourse.myblog.domain.ArticleVO;
 import techcourse.myblog.domain.CommentVO;
 import techcourse.myblog.domain.UserVO;
+import techcourse.myblog.service.dto.CommentRequestRestDto;
+
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static techcourse.myblog.web.UserControllerTest.testEmail;
@@ -87,7 +93,7 @@ public class ArticleControllerTests {
     void updateArticleByIdPageTest() {
         String updatedTitle = "포비의 글";
         String updatedCoverUrl = "http://www.kinews.net/news/photo/200907/bjs.jpg";
-        String updatedContents = "나는 우아한형제들에서 짱이다.";
+        String updatedContents = "나는 우아한테크코스에서 짱이다.";
         String updatedUniContents = StringEscapeUtils.escapeJava(updatedContents);
 
         webTestClient.put()
@@ -276,6 +282,11 @@ public class ArticleControllerTests {
                 });
     }
 
+    @Test
+    void 댓글_추가_REST_테스트() {
+        EntityExchangeResult<byte[]> result = postRestRequest("/articles/1/comments/rest", CommentRequestRestDto.class, "New Comment", "2017-01-13T17:09:42.411");
+    }
+
     private <T> BodyInserters.FormInserter<String> mapBy(Class<T> classType, String... parameters) {
         BodyInserters.FormInserter<String> body = BodyInserters.fromFormData(Strings.EMPTY, Strings.EMPTY);
 
@@ -294,8 +305,39 @@ public class ArticleControllerTests {
                 .returnResult();
     }
 
+    EntityExchangeResult<byte[]> postRestRequest(String uri, Class mappingClass, String... args) {
+        HashMap<String, String> params = new HashMap<>();
+        for (int i = 0; i < mappingClass.getDeclaredFields().length; i++) {
+            params.put(mappingClass.getDeclaredFields()[i].getName(), args[i]);
+        }
+
+        return webTestClient.post()
+                .uri(uri)
+                .header("Cookie", cookie)
+                .body(Mono.just(params), Map.class)
+                .exchange()
+                .expectBody()
+                .returnResult();
+    }
+
     String postRequest(String uri, Class mappingClass, String... args) {
         return webTestClient.post()
+                .uri(uri)
+                .header("Cookie", cookie)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .body(mapBy(mappingClass, args))
+                .exchange()
+                .expectStatus()
+                .isFound()
+                .expectBody()
+                .returnResult()
+                .getResponseHeaders()
+                .getLocation()
+                .toString();
+    }
+
+    String putRequest(String uri, Class mappingClass, String... args) {
+        return webTestClient.put()
                 .uri(uri)
                 .header("Cookie", cookie)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)

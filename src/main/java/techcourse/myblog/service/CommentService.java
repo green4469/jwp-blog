@@ -9,6 +9,7 @@ import techcourse.myblog.service.dto.CommentRequestDto;
 import techcourse.myblog.service.dto.CommentResponseDto;
 
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,5 +41,9 @@ public class CommentService {
         return Collections.unmodifiableList(comments.stream()
                 .map(CommentResponseDto::new)
                 .collect(Collectors.toList()));
+    }
+
+    public List<Comment> findByArticleAfter(Article article, LocalDateTime createdAt) {
+        return Collections.unmodifiableList(commentRepository.findByArticleAndCreatedAtAfter(article, createdAt));
     }
 }

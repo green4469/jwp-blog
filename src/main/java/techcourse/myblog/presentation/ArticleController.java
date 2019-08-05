@@ -1,6 +1,8 @@
 package techcourse.myblog.presentation;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindException;
@@ -14,9 +16,14 @@ import techcourse.myblog.service.ArticleService;
 import techcourse.myblog.service.CommentService;
 import techcourse.myblog.service.dto.ArticleRequestDto;
 import techcourse.myblog.service.dto.CommentRequestDto;
+import techcourse.myblog.service.dto.CommentRequestRestDto;
+import techcourse.myblog.service.dto.CommentResponseDto;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static techcourse.myblog.service.UserService.LOGGED_IN_USER_SESSION_KEY;
 
@@ -87,6 +94,25 @@ public class ArticleController {
         Comment newComment = commentRequestDto.toComment(commenter, article);
         commentService.save(newComment);
         return "redirect:/articles/" + articleId;
+    }
+
+    @PostMapping("/{articleId}/comments/rest")
+    @ResponseBody
+    public ResponseEntity<List<CommentResponseDto>> addNewComment2(@PathVariable long articleId, @RequestBody CommentRequestRestDto commentRequestRestDto,
+                                                                   HttpSession httpSession) {
+        Article article = articleService.findById(articleId);
+        User commenter = (User) httpSession.getAttribute(LOGGED_IN_USER_SESSION_KEY);
+        commentService.save(commentRequestRestDto.toComment(commenter, article));
+        List<Comment> addedComments = null;
+        if (commentRequestRestDto.getLastCreatedAt() != null) {
+            addedComments = commentService.findByArticleAfter(article, commentRequestRestDto.getLastCreatedAt());
+        } else {
+            addedComments = commentService.findByArticle(article);
+        }
+
+        return new ResponseEntity<>(addedComments.stream()
+                .map(CommentResponseDto::new)
+                .collect(Collectors.toList()), HttpStatus.ACCEPTED);
     }
 
 

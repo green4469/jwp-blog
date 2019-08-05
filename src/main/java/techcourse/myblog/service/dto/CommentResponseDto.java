@@ -15,13 +15,15 @@ import java.time.LocalDateTime;
 public class CommentResponseDto {
     private long id;
     private String comment;
-    private User commenter;
+    private String commenter;
     private long minAgo;
+    private LocalDateTime createdAt;
 
     public CommentResponseDto(Comment comment) {
         this.id = comment.getId();
         this.comment = comment.getComment();
-        this.commenter = comment.getCommenter();
+        this.commenter = comment.getCommenter().getName();
         this.minAgo = Duration.between(comment.getCreatedAt(), LocalDateTime.now()).toMinutes();
+        this.createdAt = comment.getCreatedAt();
     }
 }
