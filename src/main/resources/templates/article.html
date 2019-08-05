@@ -120,6 +120,37 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.1.2/handlebars.min.js"></script>
 <script th:inline="javascript">
     /*<![CDATA[*/
+
+    let articleId = /*[[${article.id}]]*/;
+
+    fetch('/articles/' + articleId +  '/comments', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json;charset=UTF-8'
+        }
+    }).then(function(response) {
+        return response.json();
+    }).then(function(json) {
+        let comments = document.getElementById("comment-list");
+
+        // Remove all children nodes
+        var child = comments.lastElementChild;
+        while (child) {
+            comments.removeChild(child);
+            child = comments.lastElementChild;
+        }
+
+        // Add All comments
+        for (var i = 0; i < json.length; i++){
+            var obj = json[i];
+            let compiledNode = commentCompiledTemplate({"commenter": obj.commenter, "comment": obj.comment, "id": obj.id, "minAgo": obj.minAgo});
+            console.log(compiledNode);
+            console.log(typeof compiledNode);
+
+            comments.insertAdjacentHTML('beforeend', commentCompiledTemplate({"commenter": obj.commenter, "comment": obj.comment, "id": obj.id, "minAgo": obj.minAgo}));
+        }
+    })
+
     const commentTemplate =
         "<li class=\"comment-item border bottom mrg-btm-30\">\n"+
         "   <img class=\"thumb-img img-circle\" src=\"https://avatars3.githubusercontent.com/u/50367798?v=4\" alt=\"\">\n"+

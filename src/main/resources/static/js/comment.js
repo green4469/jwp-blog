@@ -8,7 +8,7 @@ commentList.addEventListener("click", function (ev) {
     if (event.target.classList.contains("btn") && event.target.dataset.whichButton === 'delete') {
         console.log("remove btn works")
         console.log(event.target.dataset.commentId)
-        fetch('/comments/' + event.target.dataset.commentId, {
+        fetch('/comments/' + event.target.dataset.commentId + '/rest', {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json;charset=UTF-8'
@@ -39,11 +39,11 @@ commentList.addEventListener("click", function (ev) {
     if (event.target.classList.contains("btn") && event.target.dataset.whichButton === 'update') {
         console.log("update btn works")
         let requestDto = {
-            comment: event.target.parentNode.children[1].innerHTML
+            comment: event.target.parentNode.children[0].value
         }
 
-        fetch('/comments/' + event.target.dataset.commentId, {
-            method: 'UPDATE',
+        fetch('/comments/' + event.target.dataset.commentId + '/rest' , {
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json;charset=UTF-8'
             },

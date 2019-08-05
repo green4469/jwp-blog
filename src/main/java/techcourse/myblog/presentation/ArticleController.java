@@ -74,6 +74,15 @@ public class ArticleController {
         return "article";
     }
 
+    @GetMapping("/{articleId}/comments")
+    @ResponseBody
+    public ResponseEntity<List<CommentResponseDto>> getCommentsByArticle(@PathVariable long articleId) {
+        Article article = articleService.findById(articleId);
+        return new ResponseEntity<>(commentService.findByArticle(article).stream()
+                .map(CommentResponseDto::new)
+                .collect(Collectors.toList()), HttpStatus.ACCEPTED);
+    }
+
     @PutMapping("/{articleId}")
     public String updateArticleById(@PathVariable long articleId, ArticleRequestDto articleRequestDto) {
         articleService.update(articleId, articleRequestDto);
@@ -102,13 +111,11 @@ public class ArticleController {
         Article article = articleService.findById(articleId);
         User commenter = (User) httpSession.getAttribute(LOGGED_IN_USER_SESSION_KEY);
         commentService.save(commentRequestDto.toComment(commenter, article));
-        List<Comment> addedComments = commentService.findByArticle(article);
 
-        return new ResponseEntity<>(addedComments.stream()
+        return new ResponseEntity<>(commentService.findByArticle(article).stream()
                 .map(CommentResponseDto::new)
                 .collect(Collectors.toList()), HttpStatus.ACCEPTED);
     }
-
 
     @ExceptionHandler(BindException.class)
     public RedirectView handleBindError(BindException e, RedirectAttributes redirectAttributes) {

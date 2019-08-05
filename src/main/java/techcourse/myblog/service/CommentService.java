@@ -46,4 +46,12 @@ public class CommentService {
     public List<Comment> findByArticleAfter(Article article, LocalDateTime createdAt) {
         return Collections.unmodifiableList(commentRepository.findByArticleAndCreatedAtAfter(article, createdAt));
     }
+
+    public void deleteById(long commentId) {
+        commentRepository.deleteById(commentId);
+    }
+
+    public Comment findById(long commentId) {
+        return commentRepository.findById(commentId).orElseThrow(CommentNotFoundException::new);
+    }
 }
