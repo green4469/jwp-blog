@@ -1,6 +1,6 @@
 # Blog Application
 
-[우아한테크코스 - 웹 백엔드 과정][http://woowabros.github.io/woowabros/2019/02/08/woowacourse.html]에서 진행한 블로그 어플리케이션 미션의 결과물입니다. 
+[우아한테크코스 - 웹 백엔드 과정](http://woowabros.github.io/woowabros/2019/02/08/woowacourse.html)에서 진행한 블로그 어플리케이션 미션의 결과물입니다. 
 
 ## 기술 스택
 
